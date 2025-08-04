@@ -270,9 +270,60 @@ repos:
       - id: flake8
 ```
 
-## Docker
+## Vercel Deployment
 
-### Building Images
+### Why Vercel?
+
+Vercel is an excellent choice for deploying FastAPI applications because:
+
+- **Serverless**: Automatic scaling and pay-per-use
+- **Global CDN**: Fast loading times worldwide
+- **Easy deployment**: Simple Git integration
+- **Free tier**: Generous free plan for development
+- **Automatic HTTPS**: SSL certificates included
+
+### Prerequisites
+
+1. **Vercel account**: Sign up at https://vercel.com
+2. **Vercel CLI**: Install with `npm install -g vercel`
+3. **Project setup**: Your project is already configured for Vercel
+
+### Local Vercel Deployment
+
+```bash
+# Deploy to Vercel
+./deploy_vercel.sh
+
+# Or manually
+vercel --prod
+```
+
+### Vercel Configuration
+
+The project includes:
+
+- **`vercel.json`**: Vercel configuration file
+- **`api/index.py`**: Serverless-compatible FastAPI app
+- **`api/requirements.txt`**: Optimized dependencies for Vercel
+
+### Getting Vercel Secrets
+
+1. **Go to Vercel**: https://vercel.com/account/tokens
+2. **Create token**: Generate a new deployment token
+3. **Get project info**: Run `vercel link` to get org and project IDs
+4. **Add secrets** to GitHub repository
+
+### Vercel vs Traditional Deployment
+
+| Feature | Vercel | Traditional Server |
+|---------|--------|-------------------|
+| **Setup** | Very easy | Requires server setup |
+| **Scaling** | Automatic | Manual configuration |
+| **Cost** | Pay-per-use | Fixed monthly cost |
+| **Control** | Limited | Full control |
+| **Database** | External needed | Can be self-hosted |
+
+## Docker
 
 ```bash
 # Build image
@@ -320,10 +371,20 @@ Our CI/CD pipeline consists of three main jobs:
 
 Set these secrets in your GitHub repository:
 
+#### Required for Docker Hub:
 - `DOCKERHUB_USERNAME`: Your Docker Hub username
 - `DOCKERHUB_TOKEN`: Your Docker Hub access token
-- `SSH_PRIVATE_KEY`: SSH key for deployment
-- `TARGET_HOST`: Target server hostname
+
+#### Optional for Deployment:
+- `SSH_PRIVATE_KEY`: SSH key for deployment (only if you have a target server)
+- `TARGET_HOST`: Target server hostname (only if you have a target server)
+
+#### Optional for Vercel Deployment:
+- `VERCEL_TOKEN`: Your Vercel deployment token
+- `VERCEL_ORG_ID`: Your Vercel organization ID
+- `VERCEL_PROJECT_ID`: Your Vercel project ID
+
+**Note**: If you don't have a target server yet, the workflow will still build and push Docker images, but will skip the deployment step. You can also deploy to Vercel instead of a traditional server.
 
 ### Local Testing
 
