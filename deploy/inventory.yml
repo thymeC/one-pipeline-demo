@@ -1,0 +1,12 @@
+all:
+  children:
+    webservers:
+      hosts:
+        web-server-1:
+          ansible_host: "{{ lookup('env', 'TARGET_HOST') | default('your-server-ip') }}"
+          ansible_user: "{{ lookup('env', 'SSH_USER') | default('ubuntu') }}"
+          ansible_ssh_private_key_file: "{{ lookup('env', 'SSH_PRIVATE_KEY_FILE') | default('~/.ssh/id_rsa') }}"
+          ansible_python_interpreter: /usr/bin/python3
+      vars:
+        ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+        ansible_ssh_pipelining: True 

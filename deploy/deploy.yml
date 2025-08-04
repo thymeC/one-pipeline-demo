@@ -1,0 +1,151 @@
+---
+- name: Deploy FastAPI Application to Production
+  hosts: webservers
+  become: yes
+  vars:
+    app_name: "hsbc-pipeline-demo"
+    app_user: "fastapi"
+    app_dir: "/opt/{{ app_name }}"
+    app_port: 8000
+    nexus_url: "{{ nexus_url | default('your-nexus-registry.com') }}"
+    repository_name: "{{ repository_name | default('your-repository-name') }}"
+    build_number: "{{ build_number | default('latest') }}"
+    deployment_time: "{{ deployment_time | default('unknown') }}"
+
+  tasks:
+    - name: Update package cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required packages
+      apt:
+        name:
+          - python3
+          - python3-pip
+          - python3-venv
+          - curl
+          - nginx
+          - supervisor
+        state: present
+
+    - name: Create application user
+      user:
+        name: "{{ app_user }}"
+        system: yes
+        shell: /bin/bash
+        home: "/home/{{ app_user }}"
+        create_home: yes
+
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: '0755'
+
+    - name: Create Python virtual environment
+      pip:
+        name: virtualenv
+        state: present
+      become_user: "{{ app_user }}"
+
+    - name: Create virtual environment
+      command: python3 -m venv {{ app_dir }}/venv
+      args:
+        creates: "{{ app_dir }}/venv/bin/activate"
+      become_user: "{{ app_user }}"
+
+    - name: Download application artifact from Nexus
+      get_url:
+        url: "http://{{ nexus_url }}/repository/{{ repository_name }}/fastapi-app-{{ build_number }}.tar.gz"
+        dest: "/tmp/fastapi-app-{{ build_number }}.tar.gz"
+        mode: '0644'
+        timeout: 300
+
+    - name: Extract application artifact
+      unarchive:
+        src: "/tmp/fastapi-app-{{ build_number }}.tar.gz"
+        dest: "{{ app_dir }}"
+        remote_src: yes
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+
+    - name: Install Python dependencies
+      pip:
+        requirements: "{{ app_dir }}/requirements.txt"
+        virtualenv: "{{ app_dir }}/venv"
+        state: present
+      become_user: "{{ app_user }}"
+
+    - name: Create environment file
+      template:
+        src: env.j2
+        dest: "{{ app_dir }}/.env"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: '0644'
+
+    - name: Create systemd service file
+      template:
+        src: fastapi.service.j2
+        dest: /etc/systemd/system/{{ app_name }}.service
+        mode: '0644'
+      notify: reload systemd
+
+    - name: Create Nginx configuration
+      template:
+        src: nginx.conf.j2
+        dest: /etc/nginx/sites-available/{{ app_name }}
+        mode: '0644'
+      notify: reload nginx
+
+    - name: Enable Nginx site
+      file:
+        src: /etc/nginx/sites-available/{{ app_name }}
+        dest: /etc/nginx/sites-enabled/{{ app_name }}
+        state: link
+      notify: reload nginx
+
+    - name: Remove default Nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: reload nginx
+
+    - name: Start and enable FastAPI service
+      systemd:
+        name: "{{ app_name }}"
+        state: started
+        enabled: yes
+        daemon_reload: yes
+
+    - name: Wait for application to start
+      wait_for:
+        port: "{{ app_port }}"
+        delay: 10
+        timeout: 60
+
+    - name: Health check
+      uri:
+        url: "http://localhost:{{ app_port }}/api/v1/health"
+        method: GET
+        status_code: 200
+      retries: 3
+      delay: 10
+
+    - name: Clean up old artifacts
+      file:
+        path: "/tmp/fastapi-app-*.tar.gz"
+        state: absent
+
+  handlers:
+    - name: reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: reload nginx
+      service:
+        name: nginx
+        state: reloaded
