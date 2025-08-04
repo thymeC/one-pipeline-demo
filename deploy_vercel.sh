@@ -8,21 +8,15 @@ set -e  # Exit on any error
 echo "🚀 Deploying to Vercel..."
 echo "=========================="
 
-# Check if Vercel CLI is installed
-if ! command -v vercel &> /dev/null; then
-    echo "📦 Installing Vercel CLI..."
-    npm install -g vercel
-fi
-
 # Check if user is logged in
-if ! vercel whoami &> /dev/null; then
+if ! npx vercel whoami &> /dev/null; then
     echo "🔐 Please login to Vercel..."
-    vercel login
+    npx vercel login
 fi
 
 # Deploy to Vercel
 echo "🚀 Deploying application..."
-vercel --prod
+npx vercel --prod
 
 echo "✅ Deployment completed!"
 echo "=========================="
