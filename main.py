@@ -10,7 +10,7 @@ from datetime import datetime
 app = FastAPI(
     title="HSBC Pipeline Demo API",
     description="A FastAPI application for HSBC pipeline demonstration",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # Add CORS middleware
@@ -22,6 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Pydantic models
 class Item(BaseModel):
     id: Optional[int] = None
@@ -30,14 +31,17 @@ class Item(BaseModel):
     price: float
     created_at: Optional[datetime] = None
 
+
 class HealthCheck(BaseModel):
     status: str
     timestamp: datetime
     version: str
 
+
 # In-memory storage (replace with database in production)
 items_db = []
 item_id_counter = 1
+
 
 @app.get("/", response_model=dict)
 def read_root():
@@ -46,22 +50,21 @@ def read_root():
         "message": "Welcome to HSBC Pipeline Demo API",
         "version": "1.0.0",
         "docs": "/docs",
-        "health": "/health"
+        "health": "/health",
     }
+
 
 @app.get("/health", response_model=HealthCheck)
 def health_check():
     """Health check endpoint"""
-    return HealthCheck(
-        status="healthy",
-        timestamp=datetime.now(),
-        version="1.0.0"
-    )
+    return HealthCheck(status="healthy", timestamp=datetime.now(), version="1.0.0")
+
 
 @app.get("/items", response_model=List[Item])
 def get_items():
     """Get all items"""
     return items_db
+
 
 @app.get("/items/{item_id}", response_model=Item)
 def get_item(item_id: int):
@@ -70,6 +73,7 @@ def get_item(item_id: int):
         if item.id == item_id:
             return item
     raise HTTPException(status_code=404, detail="Item not found")
+
 
 @app.post("/items", response_model=Item)
 def create_item(item: Item):
@@ -80,6 +84,7 @@ def create_item(item: Item):
     item_id_counter += 1
     items_db.append(item)
     return item
+
 
 @app.put("/items/{item_id}", response_model=Item)
 def update_item(item_id: int, item: Item):
@@ -92,6 +97,7 @@ def update_item(item_id: int, item: Item):
             return item
     raise HTTPException(status_code=404, detail="Item not found")
 
+
 @app.delete("/items/{item_id}")
 def delete_item(item_id: int):
     """Delete an item"""
@@ -101,6 +107,7 @@ def delete_item(item_id: int):
             return {"message": f"Item {item_id} deleted successfully"}
     raise HTTPException(status_code=404, detail="Item not found")
 
+
 @app.get("/info")
 def get_info():
     """Get application information"""
@@ -108,8 +115,9 @@ def get_info():
         "app_name": "HSBC Pipeline Demo",
         "environment": os.getenv("ENVIRONMENT", "development"),
         "deployment_time": os.getenv("DEPLOYMENT_TIME", "unknown"),
-        "build_number": os.getenv("BUILD_NUMBER", "unknown")
+        "build_number": os.getenv("BUILD_NUMBER", "unknown"),
     }
+
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 8000))

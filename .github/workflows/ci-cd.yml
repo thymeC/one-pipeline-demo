@@ -7,9 +7,8 @@ on:
     branches: [ main ]
 
 env:
-  REGISTRY: your-nexus-registry.com
-  IMAGE_NAME: hsbc-pipeline-demo
-  NEXUS_REPOSITORY: your-repository-name
+  REGISTRY: docker.io
+  IMAGE_NAME: jinggegeha/one-pipeline-demo
 
 jobs:
   test:
@@ -46,7 +45,7 @@ jobs:
       run: |
         pip install flake8 black
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        black --check .
+        black . --check
 
   build:
     needs: test
@@ -60,18 +59,17 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
       
-    - name: Log in to Nexus Registry
+    - name: Log in to Docker Hub
       uses: docker/login-action@v3
       with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ secrets.NEXUS_USERNAME }}
-        password: ${{ secrets.NEXUS_PASSWORD }}
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
         
     - name: Extract metadata
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+        images: ${{ env.IMAGE_NAME }}
         tags: |
           type=ref,event=branch
           type=ref,event=pr
@@ -96,11 +94,11 @@ jobs:
         echo "BUILD_NUMBER=${{ github.run_number }}" >> $GITHUB_ENV
         echo "DEPLOYMENT_TIME=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_ENV
         
-    - name: Upload artifact to Nexus
-      run: |
-        curl -u "${{ secrets.NEXUS_USERNAME }}:${{ secrets.NEXUS_PASSWORD }}" \
-          --upload-file dist/fastapi-app.tar.gz \
-          "http://${{ env.REGISTRY }}/repository/${{ env.NEXUS_REPOSITORY }}/fastapi-app-${{ github.run_number }}.tar.gz"
+    - name: Upload artifact to GitHub Releases
+      uses: actions/upload-artifact@v3
+      with:
+        name: fastapi-app-${{ github.run_number }}
+        path: dist/fastapi-app.tar.gz
 
   deploy:
     needs: build
@@ -124,8 +122,7 @@ jobs:
       run: |
         cd deploy
         ansible-playbook -i inventory.yml deploy.yml \
-          -e "nexus_url=${{ env.REGISTRY }}" \
-          -e "repository_name=${{ env.NEXUS_REPOSITORY }}" \
+          -e "docker_image=${{ env.IMAGE_NAME }}" \
           -e "build_number=${{ github.run_number }}" \
           -e "deployment_time=${{ env.DEPLOYMENT_TIME }}" \
           --extra-vars "ansible_ssh_private_key_file=~/.ssh/id_rsa"
