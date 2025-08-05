@@ -145,7 +145,7 @@ jobs:
       if: steps.check-deployment.outputs.deploy_enabled == 'true'
       run: |
         sleep 30
-        curl -f http://${{ secrets.TARGET_HOST }}:8000/api/v1/health || exit 1
+        curl -f http://${{ secrets.TARGET_HOST }}:8000/health || exit 1
         
     - name: Deployment skipped
       if: steps.check-deployment.outputs.deploy_enabled == 'false'

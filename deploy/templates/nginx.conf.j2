@@ -17,7 +17,7 @@ server {
     limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
     limit_req zone=api burst=20 nodelay;
 
-    # Proxy settings
+    # Proxy settings for Docker container
     location / {
         limit_req zone=api burst=20 nodelay;
         
@@ -38,9 +38,9 @@ server {
         proxy_buffers 8 4k;
     }
 
-    # Health check endpoint
+    # Health check endpoint (updated for Docker container)
     location /health {
-        proxy_pass http://127.0.0.1:{{ app_port }}/api/v1/health;
+        proxy_pass http://127.0.0.1:{{ app_port }}/health;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -50,10 +50,17 @@ server {
         limit_req off;
     }
 
-    # Static files (if any)
-    location /static/ {
-        alias {{ app_dir }}/static/;
-        expires 1y;
-        add_header Cache-Control "public, immutable";
+    # API endpoints
+    location /api/ {
+        proxy_pass http://127.0.0.1:{{ app_port }}/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        
+        # Timeouts
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
     }
 } 
