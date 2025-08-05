@@ -6,7 +6,7 @@
     app_name: "one-pipeline-demo"
     app_port: 8000
     docker_image: "{{ docker_image | default('jinggegeha/one-pipeline-demo') }}"
-    docker_tag: "{{ build_number | default('latest') }}"
+    docker_tag: "{{ docker_tag | default(build_number) | default('latest') }}"
     deployment_time: "{{ deployment_time | default('unknown') }}"
 
   tasks:
@@ -34,6 +34,10 @@
     - name: Debug Docker check result
       debug:
         msg: "Docker binary exists: {{ docker_binary.stat.exists }}"
+
+    - name: Debug Docker image info
+      debug:
+        msg: "Pulling image: {{ docker_image }}:{{ docker_tag }}"
 
     - name: Add Docker GPG key
       apt_key:
@@ -80,12 +84,6 @@
         name: "{{ docker_image }}"
         state: absent
       ignore_errors: yes
-
-    - name: Test Docker Hub connectivity with busybox
-      docker_image:
-        name: "busybox:latest"
-        source: pull
-        force_source: yes
 
     - name: Pull Docker image from Docker Hub
       docker_image:

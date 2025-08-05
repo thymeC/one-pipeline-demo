@@ -87,6 +87,11 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         
+    - name: Get Docker tags
+      run: |
+        echo "DOCKER_TAGS=${{ steps.meta.outputs.tags }}" >> $GITHUB_ENV
+        echo "DOCKER_TAG=$(echo '${{ steps.meta.outputs.tags }}' | tr ' ' '\n' | head -1)" >> $GITHUB_ENV
+        
     - name: Create deployment artifact
       run: |
         mkdir -p dist
@@ -151,6 +156,7 @@ jobs:
         cd deploy
         ansible-playbook -i inventory.yml deploy.yml \
           -e "docker_image=${{ env.IMAGE_NAME }}" \
+          -e "docker_tag=${{ env.DOCKER_TAG }}" \
           -e "build_number=${{ github.run_number }}" \
           -e "deployment_time=${{ env.DEPLOYMENT_TIME }}" \
           -e "target_host=${{ secrets.TARGET_HOST }}" \
