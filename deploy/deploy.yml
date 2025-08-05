@@ -38,10 +38,11 @@
     - name: Debug Docker image info
       debug:
         msg: "Pulling image: {{ docker_image }}:{{ docker_tag }}"
+        msg: "All variables: docker_image={{ docker_image }}, docker_tag={{ docker_tag }}, build_number={{ build_number }}"
 
     - name: Validate Docker tag
       fail:
-        msg: "Docker tag is empty or invalid: '{{ docker_tag }}'"
+        msg: "Docker tag is empty or invalid: '{{ docker_tag }}'. Please check GitHub Actions workflow."
       when: docker_tag is not defined or docker_tag == "" or docker_tag == "None"
 
     - name: Add Docker GPG key

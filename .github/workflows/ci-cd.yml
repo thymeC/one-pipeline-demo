@@ -133,6 +133,20 @@ jobs:
           echo "deploy_enabled=true" >> $GITHUB_OUTPUT
           echo "✅ TARGET_HOST configured - proceeding with deployment"
         fi
+        
+    - name: Set Docker tag
+      run: |
+        # Use branch name as Docker tag
+        if [[ "${{ github.ref }}" == refs/heads/main ]]; then
+          echo "DOCKER_TAG=main" >> $GITHUB_ENV
+          echo "Using Docker tag: main"
+        elif [[ "${{ github.ref }}" == refs/heads/develop ]]; then
+          echo "DOCKER_TAG=develop" >> $GITHUB_ENV
+          echo "Using Docker tag: develop"
+        else
+          echo "DOCKER_TAG=latest" >> $GITHUB_ENV
+          echo "Using Docker tag: latest"
+        fi
       
     - name: Set up SSH
       if: steps.check-deployment.outputs.deploy_enabled == 'true'
@@ -162,10 +176,25 @@ jobs:
     - name: Deploy with Ansible
       if: steps.check-deployment.outputs.deploy_enabled == 'true'
       run: |
+        echo "Debug: IMAGE_NAME=${{ env.IMAGE_NAME }}"
+        echo "Debug: DOCKER_TAG=${{ env.DOCKER_TAG }}"
+        echo "Debug: BUILD_NUMBER=${{ github.run_number }}"
+        
+        # Set Docker tag based on branch
+        if [[ "${{ github.ref }}" == refs/heads/main ]]; then
+          DOCKER_TAG="main"
+        elif [[ "${{ github.ref }}" == refs/heads/develop ]]; then
+          DOCKER_TAG="develop"
+        else
+          DOCKER_TAG="latest"
+        fi
+        
+        echo "Using Docker tag: $DOCKER_TAG"
+        
         cd deploy
         ansible-playbook -i inventory.yml deploy.yml \
           -e "docker_image=${{ env.IMAGE_NAME }}" \
-          -e "docker_tag=${{ env.DOCKER_TAG }}" \
+          -e "docker_tag=$DOCKER_TAG" \
           -e "build_number=${{ github.run_number }}" \
           -e "deployment_time=${{ env.DEPLOYMENT_TIME }}" \
           -e "target_host=${{ secrets.TARGET_HOST }}" \
