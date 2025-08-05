@@ -3,9 +3,9 @@ all:
     webservers:
       hosts:
         web-server-1:
-          ansible_host: "{{ lookup('env', 'TARGET_HOST') | default('8.136.4.119') }}"
-          ansible_user: "{{ lookup('env', 'SSH_USER') | default('ubuntu') }}"
-          ansible_ssh_private_key_file: "{{ lookup('env', 'SSH_PRIVATE_KEY') | default('~/.ssh/id_rsa') }}"
+          ansible_host: "{{ target_host | default('localhost') }}"
+          ansible_user: "{{ ssh_user | default('ubuntu') }}"
+          ansible_ssh_private_key_file: "{{ ssh_private_key_file | default('~/.ssh/id_rsa') }}"
           ansible_python_interpreter: /usr/bin/python3
       vars:
         ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
