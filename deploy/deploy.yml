@@ -39,6 +39,11 @@
       debug:
         msg: "Pulling image: {{ docker_image }}:{{ docker_tag }}"
 
+    - name: Validate Docker tag
+      fail:
+        msg: "Docker tag is empty or invalid: '{{ docker_tag }}'"
+      when: docker_tag is not defined or docker_tag == "" or docker_tag == "None"
+
     - name: Add Docker GPG key
       apt_key:
         url: https://download.docker.com/linux/ubuntu/gpg
@@ -87,7 +92,7 @@
 
     - name: Pull Docker image from Docker Hub
       docker_image:
-        name: "{{ docker_image }}:{{ docker_tag }}"
+        name: "{{ docker_image }}:{{ docker_tag | default('latest') }}"
         source: pull
         force_source: yes
 
@@ -99,7 +104,7 @@
     - name: Create Docker container
       docker_container:
         name: "{{ app_name }}"
-        image: "{{ docker_image }}:{{ docker_tag }}"
+        image: "{{ docker_image }}:{{ docker_tag | default('latest') }}"
         state: started
         restart_policy: unless-stopped
         ports:
@@ -107,7 +112,7 @@
         env:
           ENVIRONMENT: "production"
           DEPLOYMENT_TIME: "{{ deployment_time }}"
-          BUILD_NUMBER: "{{ docker_tag }}"
+          BUILD_NUMBER: "{{ docker_tag | default('latest') }}"
         networks:
           - name: "{{ app_name }}-network"
 

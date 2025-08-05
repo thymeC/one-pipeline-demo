@@ -90,9 +90,16 @@ jobs:
     - name: Set Docker tag
       run: |
         # Use branch name as Docker tag
-        BRANCH_NAME=${GITHUB_REF#refs/heads/}
-        echo "DOCKER_TAG=${BRANCH_NAME}" >> $GITHUB_ENV
-        echo "Using Docker tag: ${BRANCH_NAME}"
+        if [[ "${{ github.ref }}" == refs/heads/main ]]; then
+          echo "DOCKER_TAG=main" >> $GITHUB_ENV
+          echo "Using Docker tag: main"
+        elif [[ "${{ github.ref }}" == refs/heads/develop ]]; then
+          echo "DOCKER_TAG=develop" >> $GITHUB_ENV
+          echo "Using Docker tag: develop"
+        else
+          echo "DOCKER_TAG=latest" >> $GITHUB_ENV
+          echo "Using Docker tag: latest"
+        fi
         
     - name: Create deployment artifact
       run: |
