@@ -8,8 +8,8 @@ from datetime import datetime
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="HSBC Pipeline Demo API",
-    description="A FastAPI application for HSBC pipeline demonstration",
+    title="ONE Pipeline Demo API",
+    description="A FastAPI application for ONE pipeline demonstration",
     version="1.0.0",
 )
 
@@ -47,7 +47,7 @@ item_id_counter = 1
 def read_root():
     """Root endpoint returning API information"""
     return {
-        "message": "Welcome to HSBC Pipeline Demo API",
+        "message": "Welcome to ONE Pipeline Demo API",
         "version": "1.0.0",
         "docs": "/docs",
         "health": "/health",
@@ -112,7 +112,7 @@ def delete_item(item_id: int):
 def get_info():
     """Get application information"""
     return {
-        "app_name": "HSBC Pipeline Demo",
+        "app_name": "ONE Pipeline Demo",
         "environment": os.getenv("ENVIRONMENT", "development"),
         "deployment_time": os.getenv("DEPLOYMENT_TIME", "unknown"),
         "build_number": os.getenv("BUILD_NUMBER", "unknown"),

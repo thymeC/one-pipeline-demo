@@ -1,6 +1,6 @@
 # Developer Guide
 
-This guide provides comprehensive information for developers working on the HSBC Pipeline Demo project.
+This guide provides comprehensive information for developers working on the ONE Pipeline Demo project.
 
 ## Table of Contents
 

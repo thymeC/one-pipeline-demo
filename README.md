@@ -1,4 +1,4 @@
-# HSBC Pipeline Demo - FastAPI Application
+# ONE Pipeline Demo - FastAPI Application
 
 A comprehensive FastAPI application with CI/CD pipeline using GitHub Actions and Ansible for deployment to Nexus.
 
@@ -41,7 +41,7 @@ A comprehensive FastAPI application with CI/CD pipeline using GitHub Actions and
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd hsbc-pipeline-demo
+   cd one-pipeline-demo
    ```
 
 2. **Set up virtual environment**
@@ -68,12 +68,12 @@ A comprehensive FastAPI application with CI/CD pipeline using GitHub Actions and
 
 1. **Build the image**
    ```bash
-   docker build -t hsbc-pipeline-demo .
+   docker build -t one-pipeline-demo .
    ```
 
 2. **Run the container**
    ```bash
-   docker run -p 8000:8000 hsbc-pipeline-demo
+   docker run -p 8000:8000 one-pipeline-demo
    ```
 
 ## Testing
@@ -138,7 +138,7 @@ curl http://localhost:8000/api/v1/stats
    ```yaml
    env:
      REGISTRY: your-nexus-registry.com
-     IMAGE_NAME: hsbc-pipeline-demo
+     IMAGE_NAME: one-pipeline-demo
      NEXUS_REPOSITORY: your-repository-name
    ```
 
@@ -165,8 +165,8 @@ If you need to deploy manually:
 
 ```bash
 # Build and push to Nexus
-docker build -t your-nexus-registry.com/hsbc-pipeline-demo .
-docker push your-nexus-registry.com/hsbc-pipeline-demo
+docker build -t your-nexus-registry.com/one-pipeline-demo .
+docker push your-nexus-registry.com/one-pipeline-demo
 
 # Deploy with Ansible
 cd deploy
@@ -222,7 +222,7 @@ ansible-playbook -i inventory.yml deploy.yml \
 
 ### Directory Structure
 ```
-hsbc-pipeline-demo/
+one-pipeline-demo/
 ├── main.py                 # FastAPI application entry point
 ├── app/                    # Application package
 │   ├── __init__.py
@@ -255,11 +255,11 @@ hsbc-pipeline-demo/
 ### Application Logs
 ```bash
 # View application logs
-sudo journalctl -u hsbc-pipeline-demo -f
+sudo journalctl -u one-pipeline-demo -f
 
 # View Nginx logs
-sudo tail -f /var/log/nginx/hsbc-pipeline-demo_access.log
-sudo tail -f /var/log/nginx/hsbc-pipeline-demo_error.log
+sudo tail -f /var/log/nginx/one-pipeline-demo_access.log
+sudo tail -f /var/log/nginx/one-pipeline-demo_error.log
 ```
 
 ### Health Monitoring
@@ -268,7 +268,7 @@ sudo tail -f /var/log/nginx/hsbc-pipeline-demo_error.log
 curl http://your-server/api/v1/health
 
 # Check service status
-sudo systemctl status hsbc-pipeline-demo
+sudo systemctl status one-pipeline-demo
 ```
 
 ## Security Considerations
@@ -285,8 +285,8 @@ sudo systemctl status hsbc-pipeline-demo
 
 1. **Application won't start**
    ```bash
-   sudo systemctl status hsbc-pipeline-demo
-   sudo journalctl -u hsbc-pipeline-demo -n 50
+   sudo systemctl status one-pipeline-demo
+sudo journalctl -u one-pipeline-demo -n 50
    ```
 
 2. **Nginx configuration issues**
@@ -297,13 +297,13 @@ sudo systemctl status hsbc-pipeline-demo
 
 3. **Permission issues**
    ```bash
-   sudo chown -R fastapi:fastapi /opt/hsbc-pipeline-demo
+   sudo chown -R fastapi:fastapi /opt/one-pipeline-demo
    ```
 
 ### Debug Mode
 ```bash
 # Run application in debug mode
-cd /opt/hsbc-pipeline-demo
+cd /opt/one-pipeline-demo
 source venv/bin/activate
 uvicorn main:app --host 0.0.0.0 --port 8000 --log-level debug
 ```
