@@ -131,14 +131,19 @@ jobs:
       run: |
         ssh-keyscan -H ${{ secrets.TARGET_HOST }} >> ~/.ssh/known_hosts
         
+    - name: Verify SSH Agent Setup
+      if: steps.check-deployment.outputs.deploy_enabled == 'true'
+      run: |
+        cd deploy
+        ./verify_ssh_agent.sh
+        
     - name: Test Ansible Connection
       if: steps.check-deployment.outputs.deploy_enabled == 'true'
       run: |
         cd deploy
         ansible all -i inventory.yml -m ping \
           -e "target_host=${{ secrets.TARGET_HOST }}" \
-          -e "ssh_user=${{ secrets.SSH_USER }}" \
-          -e "ssh_private_key_file=~/.ssh/id_rsa"
+          -e "ssh_user=${{ secrets.SSH_USER }}"
         
     - name: Deploy with Ansible
       if: steps.check-deployment.outputs.deploy_enabled == 'true'
@@ -149,8 +154,7 @@ jobs:
           -e "build_number=${{ github.run_number }}" \
           -e "deployment_time=${{ env.DEPLOYMENT_TIME }}" \
           -e "target_host=${{ secrets.TARGET_HOST }}" \
-          -e "ssh_user=${{ secrets.SSH_USER }}" \
-          -e "ssh_private_key_file=~/.ssh/id_rsa"
+          -e "ssh_user=${{ secrets.SSH_USER }}"
           
     - name: Health check
       if: steps.check-deployment.outputs.deploy_enabled == 'true'

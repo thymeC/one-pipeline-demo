@@ -16,9 +16,10 @@ To enable automated deployment with Ansible, you need to configure the following
 - **How to set**: Go to your repository → Settings → Secrets and variables → Actions → New repository secret
 
 ### 3. SSH_PRIVATE_KEY
-- **Description**: SSH private key for authentication
+- **Description**: SSH private key for authentication (used by SSH agent)
 - **Format**: The entire private key content (including `-----BEGIN OPENSSH PRIVATE KEY-----` and `-----END OPENSSH PRIVATE KEY-----`)
 - **How to set**: Go to your repository → Settings → Secrets and variables → Actions → New repository secret
+- **Note**: The GitHub Actions workflow uses SSH agent to manage the key automatically
 
 ## How to Set Up SSH Keys
 
@@ -58,7 +59,8 @@ You can test the connection locally using the provided script:
 cd deploy
 export TARGET_HOST="your-server-ip"
 export SSH_USER="your-username"
-export SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)"
+# Make sure your SSH key is loaded in ssh-agent
+ssh-add ~/.ssh/id_rsa
 ./test_connection.sh
 ```
 
@@ -89,7 +91,7 @@ Once you've set up the secrets, the GitHub Actions workflow will:
 
 ```bash
 # Test SSH connection
-ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa username@target-host
+ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no username@target-host
 
 # Test Ansible connection
 ansible all -i inventory.yml -m ping -e "target_host=target-host" -e "ssh_user=username"

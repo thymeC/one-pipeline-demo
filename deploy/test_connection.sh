@@ -18,7 +18,7 @@ echo "SSH_PRIVATE_KEY: ${SSH_PRIVATE_KEY:-'NOT SET'}"
 if [ -n "$TARGET_HOST" ]; then
     echo ""
     echo "🔌 Testing SSH connection to $TARGET_HOST..."
-    if ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${SSH_USER:-ubuntu}@$TARGET_HOST "echo 'SSH connection successful'"; then
+    if ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no ${SSH_USER:-ubuntu}@$TARGET_HOST "echo 'SSH connection successful'"; then
         echo "✅ SSH connection successful"
     else
         echo "❌ SSH connection failed"
