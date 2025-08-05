@@ -87,10 +87,12 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
         
-    - name: Get Docker tags
+    - name: Set Docker tag
       run: |
-        echo "DOCKER_TAGS=${{ steps.meta.outputs.tags }}" >> $GITHUB_ENV
-        echo "DOCKER_TAG=$(echo '${{ steps.meta.outputs.tags }}' | tr ' ' '\n' | head -1)" >> $GITHUB_ENV
+        # Use branch name as Docker tag
+        BRANCH_NAME=${GITHUB_REF#refs/heads/}
+        echo "DOCKER_TAG=${BRANCH_NAME}" >> $GITHUB_ENV
+        echo "Using Docker tag: ${BRANCH_NAME}"
         
     - name: Create deployment artifact
       run: |
